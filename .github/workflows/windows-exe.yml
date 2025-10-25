@@ -1,0 +1,36 @@
+name: Build Windows EXE (Nuitka Standalone)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install build deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install nuitka==2.4.8 ordered-set zstandard
+          pip install tk
+      - name: Build
+        shell: cmd
+        run: |
+          python -m nuitka app/longform_gui.py ^
+            --standalone ^
+            --onefile ^
+            --windows-console-mode=disable ^
+            --output-filename=LongformBuilder.exe ^
+            --enable-plugin=tk-inter ^
+            --include-data-dir=app=app
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LongformBuilder-EXE
+          path: |
+            **/LongformBuilder.exe
+            LongformBuilder.exe
+          if-no-files-found: warn
