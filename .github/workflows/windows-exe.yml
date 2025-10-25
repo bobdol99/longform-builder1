@@ -1,51 +1,41 @@
-# .github/workflows/windows-exe.yml
-name: Build Windows EXE (Nuitka Standalone)
+name: Build Windows EXE (PyInstaller)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # 수동 실행 버튼 활성화
 
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      NUITKA_ASSUME_YES_FOR_DOWNLOADS: "1"   # 의존성(Dependency Walker 등) 자동 승인
 
     steps:
-      - name: Checkout
+      # 1️⃣ 코드 체크아웃
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      # 2️⃣ Python 설치
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install build deps
+      # 3️⃣ 의존성 설치
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install nuitka==2.4.8 ordered-set zstandard
-          pip install tk
+          pip install pyinstaller pillow numpy tk
 
-      - name: Build with Nuitka
+      # 4️⃣ EXE 빌드
+      - name: Build EXE with PyInstaller
         shell: cmd
-         run: |
-       python -m nuitka app/longform_gui.py ^
-      --standalone ^
-      --onefile ^
-      --windows-console-mode=disable ^
-      --output-filename=LongformBuilder.exe ^
-      --enable-plugin=tk-inter ^
-      --include-data-dir=app=app ^
-      --assume-yes-for-downloads ^
-      --nofollow-import-to=unittest ^
-      --nofollow-import-to=pydoc ^
-      --nofollow-import-to=pytest ^
-      --remove-output
+        run: |
+          pyinstaller --noconfirm --clean --windowed --onefile ^
+            --add-data "app;app" ^
+            --name LongformBuilder ^
+            app\longform_gui.py
 
+      # 5️⃣ 결과물 업로드
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: LongformBuilder-EXE
-          path: |
-            **/LongformBuilder.exe
-            LongformBuilder.exe
-          if-no-files-found: warn
+          path: dist/LongformBuilder.exe
