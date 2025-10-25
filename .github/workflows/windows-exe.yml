@@ -25,17 +25,21 @@ jobs:
           pip install nuitka==2.4.8 ordered-set zstandard
           pip install tk
 
-      - name: Build with Nuitka (onefile, standalone)
+      - name: Build with Nuitka
         shell: cmd
-        run: |
-          python -m nuitka app/longform_gui.py ^
-            --standalone ^
-            --onefile ^
-            --windows-console-mode=disable ^
-            --output-filename=LongformBuilder.exe ^
-            --enable-plugin=tk-inter ^
-            --include-data-dir=app=app ^
-            --assume-yes-for-downloads
+         run: |
+       python -m nuitka app/longform_gui.py ^
+      --standalone ^
+      --onefile ^
+      --windows-console-mode=disable ^
+      --output-filename=LongformBuilder.exe ^
+      --enable-plugin=tk-inter ^
+      --include-data-dir=app=app ^
+      --assume-yes-for-downloads ^
+      --nofollow-import-to=unittest ^
+      --nofollow-import-to=pydoc ^
+      --nofollow-import-to=pytest ^
+      --remove-output
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
